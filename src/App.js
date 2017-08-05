@@ -16,18 +16,38 @@ import {
   InputGroup
 } from "reactstrap";
 
+import { fetchCurrencyCodes } from "./api";
+import CurrencyDropdown from "./CurrencyDropdown";
+
 class App extends Component {
   constructor(props) {
     super(props);
 
     this.toggle = this.toggle.bind(this);
     this.state = {
+      isLoadingCodes: true,
       isOpen: false
     };
   }
+  componentDidMount() {    
+    fetchCurrencyCodes((currencyCodes, err) => {
+      if (err) {
+        throw new Error(err)
+        alert("Unable to load currency codes, please check your network connection and try again")
+        return
+      }
+
+      this.setState({
+        currencyCodes,
+        isLoadingCodes: false
+      })
+    );
+  }
   toggle() {
     this.setState(state => {
-      isOpen: !state.isOpen;
+      return {
+        isOpen: !state.isOpen
+      };
     });
   }
   render() {
@@ -61,6 +81,7 @@ class App extends Component {
                 </InputGroup>
               </Col>
             </Row>
+            <Row>The rates are updated daily around 4PM CET.</Row>
           </Container>
         </Jumbotron>
       </div>
