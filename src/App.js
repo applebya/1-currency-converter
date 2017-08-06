@@ -113,6 +113,13 @@ class App extends Component {
           onReverseCodes={() => this.reverseCodes()}
           {...this.state}
         />
+        <footer style={{ textAlign: "center" }}>
+          <br />
+          Made with &lt;3 by{" "}
+          <a href="http://www.applebya.com" target="_blank">
+            Andrew Appleby
+          </a>
+        </footer>
       </div>
     );
   }
@@ -146,8 +153,18 @@ function RatesCalculator({
     <Jumbotron>
       <Container>
         <Row>
-          <Col>
-            <h2>Source Currency</h2>
+          <Col md="5">
+            <h3>Source Currency</h3>
+            <br />
+          </Col>
+          <Col md="2" />
+          <Col md="5">
+            <h3>Target Currency</h3>
+            <br />
+          </Col>
+        </Row>
+        <Row>
+          <Col md="5">
             <CurrencySelector
               amount={baseAmount}
               selectedCode={baseCode}
@@ -156,11 +173,10 @@ function RatesCalculator({
               onUpdateAmount={onUpdateBaseAmount}
             />
           </Col>
-          <Col>
+          <Col md="2" style={{ textAlign: "center" }}>
             <Button onClick={onReverseCodes}>Reverse</Button>
           </Col>
-          <Col>
-            <h2>Target Currency</h2>
+          <Col md="5">
             <CurrencySelector
               amount={calculatedAmount}
               selectedCode={targetCode}
@@ -170,11 +186,12 @@ function RatesCalculator({
             />
           </Col>
         </Row>
-        <Row>
-          <br />
-          Rates are updated daily around 4PM CET.
-        </Row>
       </Container>
+      <div style={{ textAlign: "center", opacity: "0.5" }}>
+        <br />
+        Rates are updated daily around 4PM CET
+        <br />
+      </div>
     </Jumbotron>
   );
 }
