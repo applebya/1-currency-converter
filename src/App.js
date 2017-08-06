@@ -79,7 +79,7 @@ class App extends Component {
   }
   updateBaseAmount(amount) {
     let baseAmount = "";
-    const numbers = "0123456789";
+    const numbers = ".0123456789";
 
     // Strip out invalid numbers
     for (var i = 0; i < amount.length; i++) {
@@ -87,9 +87,6 @@ class App extends Component {
         baseAmount += amount[i];
       }
     }
-
-    // Convert to number, round to 2 dec places
-    baseAmount = Math.round(baseAmount * 1 * 100) / 100;
 
     this.setState({ baseAmount });
   }
