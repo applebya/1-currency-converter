@@ -5,7 +5,7 @@ function fetchCurrencyCodes(cb) {
 		.then(response => response.json())
 		.then(json => {
 			let { base, rates } = json,
-				currencyCodes = [base, ...Object.keys(json)].sort();
+				currencyCodes = [base, ...Object.keys(rates)].sort();
 
 			cb(currencyCodes);
 			return;
