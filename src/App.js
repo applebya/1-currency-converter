@@ -14,7 +14,7 @@ import {
   Button
 } from "reactstrap";
 
-import { fetchCurrencyCodes } from "./api";
+import { fetchRatesFor } from "./api";
 import CurrencySelector from "./CurrencySelector";
 
 class App extends Component {
@@ -22,64 +22,86 @@ class App extends Component {
     super(props);
 
     this.state = {
-      isLoadingCodes: true,
-      sourceCode: "CAD",
+      isLoaded: false,
+      baseCode: "CAD",
       targetCode: "USD",
-      currencyCodes: [],
-      sourceAmount: 0,
-      isOpen: false
+      baseAmount: 1,
+      navIsOpen: false
     };
   }
   componentDidMount() {
-    fetchCurrencyCodes((currencyCodes, err) => {
+    fetchRatesFor(this.state.baseCode).then(({ base, rates }) => {
       this.setState({
-        currencyCodes,
-        isLoadingCodes: false
+        isLoaded: true,
+        baseCode: base,
+        rates
       });
     });
   }
-  toggle() {
+  toggleNav() {
     this.setState(state => {
       return {
-        isOpen: !state.isOpen
+        navIsOpen: !state.navIsOpen
       };
     });
   }
-  updateSourceAmount(amount) {
-    let sourceAmount = "";
+  updateRates(baseCode) {
+    // Skip update if already same code
+    if (baseCode === this.state.baseCode) {
+      return;
+    }
+
+    fetchRatesFor(baseCode)
+      .then(({ rates }) => {
+        this.setState({
+          rates,
+          baseCode
+        });
+      })
+      .catch(err => console.error(err));
+  }
+  reverseCodes() {
+    let baseCode = this.state.targetCode,
+      targetCode = this.state.baseCode;
+
+    fetchRatesFor(baseCode)
+      .then(({ rates }) => {
+        this.setState({
+          rates,
+          baseCode,
+          targetCode
+        });
+      })
+      .catch(err => console.error(err));
+  }
+  updateTargetCode(targetCode) {
+    this.setState({ targetCode });
+  }
+  updateBaseAmount(amount) {
+    let baseAmount = "";
     const numbers = "0123456789";
 
     // Strip out invalid numbers
     for (var i = 0; i < amount.length; i++) {
       if (numbers.indexOf(amount[i]) > -1) {
-        sourceAmount += amount[i];
+        baseAmount += amount[i];
       }
     }
 
-    // Convert to number
-    // TODO: Ensure positive number
-    sourceAmount = sourceAmount * 1;
+    // Convert to number, round to 2 dec places
+    baseAmount = Math.round(baseAmount * 1 * 100) / 100;
 
-    this.setState({ sourceAmount });
+    this.setState({ baseAmount });
   }
   render() {
-    let {
-      isLoadingCodes,
-      sourceCode,
-      targetCode,
-      currencyCodes,
-      isOpen,
-      sourceAmount
-    } = this.state;
-
-    let calculatedAmount = sourceAmount * 2;
+    let { navIsOpen } = this.state;
 
     return (
       <div>
         <Navbar color="inverse" inverse toggleable>
-          <NavbarToggler right onClick={() => this.toggle} />
+          <NavbarToggler right onClick={() => this.toggleNav()} />
           <NavbarBrand href="/">Currency Converter</NavbarBrand>
-          <Collapse isOpen={isOpen} navbar>
+          <Collapse isOpen={navIsOpen} navbar>
             <Nav className="ml-auto" navbar>
               <NavItem>
                 <NavLink href="#TODO">Github</NavLink>
@@ -87,42 +109,77 @@ class App extends Component {
             </Nav>
           </Collapse>
         </Navbar>
-        <Jumbotron>
-          <Container>
-            <Row>
-              <Col>
-                <h1>Source Currency</h1>
-                <CurrencySelector
-                  amount={sourceAmount}
-                  selectedCode={sourceCode}
-                  currencyCodes={currencyCodes}
-                  onSelectCode={sourceCode => this.setState({ sourceCode })}
-                  onUpdateAmount={amount => this.updateSourceAmount(amount)}
-                  isLoading={isLoadingCodes}
-                />
-              </Col>
-
-              <Col>
-                <h1>Target Currency</h1>
-                <CurrencySelector
-                  amount={calculatedAmount}
-                  selectedCode={targetCode}
-                  currencyCodes={currencyCodes}
-                  onSelectCode={targetCode => this.setState({ targetCode })}
-                  onUpdateAmount={sourceAmount => this.setState({ sourceAmount })}
-                  isLoading={isLoadingCodes}
-                />
-              </Col>
-            </Row>
-            <Row>
-              <br />
-              Rates are updated daily around 4PM CET.
-            </Row>
-          </Container>
-        </Jumbotron>
+        <RatesCalculator
+          onSelectBaseCode={code => this.updateRates(code)}
+          onSelectTargetCode={code => this.updateTargetCode(code)}
+          onUpdateBaseAmount={amount => this.updateBaseAmount(amount)}
+          onReverseCodes={() => this.reverseCodes()}
+          {...this.state}
+        />
       </div>
     );
   }
+}
+
+function RatesCalculator({
+  isLoaded,
+  baseAmount,
+  baseCode,
+  targetCode,
+  rates,
+  onSelectBaseCode,
+  onSelectTargetCode,
+  onUpdateBaseAmount,
+  onReverseCodes
+}) {
+  // Still loading initial list?
+  if (!isLoaded) {
+    return (
+      <Jumbotron>
+        <h5>Loading...</h5>
+      </Jumbotron>
+    );
+  }
+
+  let exchangeRate = rates[targetCode],
+    calculatedAmount = baseAmount * exchangeRate,
+    currencyCodes = [baseCode, ...Object.keys(rates)];
+
+  return (
+    <Jumbotron>
+      <Container>
+        <Row>
+          <Col>
+            <h2>Source Currency</h2>
+            <CurrencySelector
+              amount={baseAmount}
+              selectedCode={baseCode}
+              currencyCodes={currencyCodes}
+              onSelectCode={onSelectBaseCode}
+              onUpdateAmount={onUpdateBaseAmount}
+            />
+          </Col>
+          <Col>
+            <Button onClick={onReverseCodes}>Reverse</Button>
+          </Col>
+          <Col>
+            <h2>Target Currency</h2>
+            <CurrencySelector
+              amount={calculatedAmount}
+              selectedCode={targetCode}
+              currencyCodes={currencyCodes}
+              onSelectCode={onSelectTargetCode}
+              onUpdateAmount={() => {}}
+            />
+          </Col>
+        </Row>
+        <Row>
+          <br />
+          Rates are updated daily around 4PM CET.
+        </Row>
+      </Container>
+    </Jumbotron>
+  );
 }
 
 export default App;

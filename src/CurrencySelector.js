@@ -8,15 +8,13 @@ export default function CurrencySelector({
   selectedCode,
   currencyCodes,
   onSelectCode,
-  onUpdateAmount,
-  isLoading
+  onUpdateAmount
 }) {
   return (
     <div>
       <InputGroup>
         <InputGroupButton>
           <CurrencyCodeDropdown
-            isLoading={isLoading}
             selectedCode={selectedCode}
             currencyCodes={currencyCodes}
             onSelect={onSelectCode}

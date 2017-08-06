@@ -18,7 +18,7 @@ export default class Example extends React.Component {
   }
 
   render() {
-    let { selectedCode } = this.props;
+    let { selectedCode, onSelect } = this.props;
 
     return (
       <ButtonDropdown isOpen={this.state.isOpen} toggle={this.toggle}>
@@ -29,7 +29,7 @@ export default class Example extends React.Component {
           <DropdownItem header>Select a code</DropdownItem>
           {this.props.currencyCodes.filter(code => code !== selectedCode).map(code => {
             return (
-              <DropdownItem key={code} onClick={() => this.props.onSelect(code)}>
+              <DropdownItem key={code} onClick={() => onSelect(code)}>
                 {code}
               </DropdownItem>
             );
