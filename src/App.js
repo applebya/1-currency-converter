@@ -32,12 +32,6 @@ class App extends Component {
   }
   componentDidMount() {
     fetchCurrencyCodes((currencyCodes, err) => {
-      if (err) {
-        alert("Unable to load currency codes, please check your network connection and try again");
-        throw new Error(err);
-        return;
-      }
-
       this.setState({
         currencyCodes,
         isLoadingCodes: false

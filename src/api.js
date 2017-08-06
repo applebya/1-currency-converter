@@ -11,7 +11,10 @@ function fetchCurrencyCodes(cb) {
 			return;
 		})
 		.catch(error => {
-			cb(null, error);
+			alert(
+				"Unable to load currency codes, please check your network connection and try again"
+			);
+			throw new Error(error);
 			return;
 		});
 }
