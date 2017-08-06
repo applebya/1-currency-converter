@@ -21,10 +21,10 @@ class App extends Component {
   constructor(props) {
     super(props);
 
-    this.toggle = this.toggle.bind(this);
     this.state = {
       isLoadingCodes: true,
-      selectedCode: null,
+      sourceCode: "CAD",
+      targetCode: "USD",
       currencyCodes: [],
       sourceAmount: 0,
       isOpen: false
@@ -46,8 +46,8 @@ class App extends Component {
     });
   }
   updateSourceAmount(amount) {
-    let sourceAmount = "",
-      numbers = "0123456789";
+    let sourceAmount = "";
+    const numbers = "0123456789";
 
     // Strip out invalid numbers
     for (var i = 0; i < amount.length; i++) {
@@ -56,24 +56,28 @@ class App extends Component {
       }
     }
 
+    // Convert to number
     // TODO: Ensure positive number
+    sourceAmount = sourceAmount * 1;
 
     this.setState({ sourceAmount });
   }
   render() {
     let {
       isLoadingCodes,
-      selectedCode,
+      sourceCode,
+      targetCode,
       currencyCodes,
       isOpen,
-      sourceAmount,
-      targetAmount
+      sourceAmount
     } = this.state;
+
+    let calculatedAmount = sourceAmount * 2;
 
     return (
       <div>
         <Navbar color="inverse" inverse toggleable>
-          <NavbarToggler right onClick={this.toggle} />
+          <NavbarToggler right onClick={() => this.toggle} />
           <NavbarBrand href="/">Currency Converter</NavbarBrand>
           <Collapse isOpen={isOpen} navbar>
             <Nav className="ml-auto" navbar>
@@ -90,9 +94,9 @@ class App extends Component {
                 <h1>Source Currency</h1>
                 <CurrencySelector
                   amount={sourceAmount}
-                  selectedCode={selectedCode}
+                  selectedCode={sourceCode}
                   currencyCodes={currencyCodes}
-                  onSelectCode={selectedCode => this.setState({ selectedCode })}
+                  onSelectCode={sourceCode => this.setState({ sourceCode })}
                   onUpdateAmount={amount => this.updateSourceAmount(amount)}
                   isLoading={isLoadingCodes}
                 />
@@ -101,10 +105,10 @@ class App extends Component {
               <Col>
                 <h1>Target Currency</h1>
                 <CurrencySelector
-                  amount={sourceAmount}
-                  selectedCode={selectedCode}
+                  amount={calculatedAmount}
+                  selectedCode={targetCode}
                   currencyCodes={currencyCodes}
-                  onSelectCode={selectedCode => this.setState({ selectedCode })}
+                  onSelectCode={targetCode => this.setState({ targetCode })}
                   onUpdateAmount={sourceAmount => this.setState({ sourceAmount })}
                   isLoading={isLoadingCodes}
                 />

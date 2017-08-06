@@ -29,7 +29,7 @@ export default class Example extends React.Component {
           <DropdownItem header>Select a code</DropdownItem>
           {this.props.currencyCodes.filter(code => code !== selectedCode).map(code => {
             return (
-              <DropdownItem key={code}>
+              <DropdownItem key={code} onClick={() => this.props.onSelect(code)}>
                 {code}
               </DropdownItem>
             );

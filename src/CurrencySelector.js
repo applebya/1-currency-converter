@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React from "react";
 import { Input, InputGroup, InputGroupButton } from "reactstrap";
 
 import CurrencyCodeDropdown from "./CurrencyCodeDropdown";
