@@ -11,7 +11,8 @@ import {
   Row,
   Col,
   Jumbotron,
-  Button
+  Button,
+  Alert
 } from "reactstrap";
 
 import { fetchRatesFor } from "./api";
@@ -26,17 +27,25 @@ class App extends Component {
       baseCode: "CAD",
       targetCode: "USD",
       baseAmount: 1,
-      navIsOpen: false
+      navIsOpen: false,
+      errorMsg: null
     };
   }
   componentDidMount() {
-    fetchRatesFor(this.state.baseCode).then(({ base, rates }) => {
-      this.setState({
-        isLoaded: true,
-        baseCode: base,
-        rates
+    fetchRatesFor(this.state.baseCode)
+      .then(({ base, rates }) => {
+        this.setState({
+          isLoaded: true,
+          baseCode: base,
+          rates
+        });
+      })
+      .catch(err => {
+        console.error(err);
+        this.setState({
+          errorMsg: "Unable to load exchange rates, please check your network connection."
+        });
       });
-    });
   }
   toggleNav() {
     this.setState(state => {
@@ -58,7 +67,12 @@ class App extends Component {
           baseCode
         });
       })
-      .catch(err => console.error(err));
+      .catch(err => {
+        console.error(err);
+        this.setState({
+          errorMsg: "Unable to load exchange rates, please check your network connection."
+        });
+      });
   }
   reverseCodes() {
     let baseCode = this.state.targetCode,
@@ -72,7 +86,12 @@ class App extends Component {
           targetCode
         });
       })
-      .catch(err => console.error(err));
+      .catch(err => {
+        console.error(err);
+        this.setState({
+          errorMsg: "Unable to load exchange rates, please check your network connection."
+        });
+      });
   }
   updateTargetCode(targetCode) {
     this.setState({ targetCode });
@@ -91,7 +110,7 @@ class App extends Component {
     this.setState({ baseAmount });
   }
   render() {
-    let { navIsOpen } = this.state;
+    let { navIsOpen, errorMsg } = this.state;
 
     return (
       <div>
@@ -101,22 +120,43 @@ class App extends Component {
           <Collapse isOpen={navIsOpen} navbar>
             <Nav className="ml-auto" navbar>
               <NavItem>
-                <NavLink href="#TODO">Github</NavLink>
+                <NavLink
+                  href="https://github.com/applebya/1-currency-converter"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Github
+                </NavLink>
               </NavItem>
             </Nav>
           </Collapse>
         </Navbar>
-        <RatesCalculator
-          onSelectBaseCode={code => this.updateRates(code)}
-          onSelectTargetCode={code => this.updateTargetCode(code)}
-          onUpdateBaseAmount={amount => this.updateBaseAmount(amount)}
-          onReverseCodes={() => this.reverseCodes()}
-          {...this.state}
-        />
+        <Jumbotron>
+          {errorMsg &&
+            <Alert
+              color="danger"
+              isOpen={!!errorMsg}
+              toggle={() => this.setState({ errorMsg: null })}
+            >
+              {errorMsg}
+            </Alert>}
+          <RatesCalculator
+            onSelectBaseCode={code => this.updateRates(code)}
+            onSelectTargetCode={code => this.updateTargetCode(code)}
+            onUpdateBaseAmount={amount => this.updateBaseAmount(amount)}
+            onReverseCodes={() => this.reverseCodes()}
+            {...this.state}
+          />
+          <div style={{ textAlign: "center", opacity: "0.5" }}>
+            <br />
+            Rates are updated daily around 4PM CET
+            <br />
+          </div>
+        </Jumbotron>
         <footer style={{ textAlign: "center" }}>
           <br />
           Made with &lt;3 by{" "}
-          <a href="http://www.applebya.com" target="_blank">
+          <a href="http://www.applebya.com" target="_blank" rel="noopener noreferrer">
             Andrew Appleby
           </a>
         </footer>
@@ -138,11 +178,7 @@ function RatesCalculator({
 }) {
   // Still loading initial list?
   if (!isLoaded) {
-    return (
-      <Jumbotron>
-        <h5>Loading...</h5>
-      </Jumbotron>
-    );
+    return <h5>Loading...</h5>;
   }
 
   let exchangeRate = rates[targetCode],
@@ -150,49 +186,42 @@ function RatesCalculator({
     currencyCodes = [baseCode, ...Object.keys(rates)];
 
   return (
-    <Jumbotron>
-      <Container>
-        <Row>
-          <Col md="5">
-            <h3>Source Currency</h3>
-            <br />
-          </Col>
-          <Col md="2" />
-          <Col md="5">
-            <h3>Target Currency</h3>
-            <br />
-          </Col>
-        </Row>
-        <Row>
-          <Col md="5">
-            <CurrencySelector
-              amount={baseAmount}
-              selectedCode={baseCode}
-              currencyCodes={currencyCodes}
-              onSelectCode={onSelectBaseCode}
-              onUpdateAmount={onUpdateBaseAmount}
-            />
-          </Col>
-          <Col md="2" style={{ textAlign: "center" }}>
-            <Button onClick={onReverseCodes}>Reverse</Button>
-          </Col>
-          <Col md="5">
-            <CurrencySelector
-              amount={calculatedAmount}
-              selectedCode={targetCode}
-              currencyCodes={currencyCodes}
-              onSelectCode={onSelectTargetCode}
-              onUpdateAmount={() => {}}
-            />
-          </Col>
-        </Row>
-      </Container>
-      <div style={{ textAlign: "center", opacity: "0.5" }}>
-        <br />
-        Rates are updated daily around 4PM CET
-        <br />
-      </div>
-    </Jumbotron>
+    <Container>
+      <Row>
+        <Col lg="5">
+          <h3>Source Currency</h3>
+          <br />
+        </Col>
+        <Col lg="2" />
+        <Col lg="5">
+          <h3>Target Currency</h3>
+          <br />
+        </Col>
+      </Row>
+      <Row>
+        <Col lg="5">
+          <CurrencySelector
+            amount={baseAmount}
+            selectedCode={baseCode}
+            currencyCodes={currencyCodes}
+            onSelectCode={onSelectBaseCode}
+            onUpdateAmount={onUpdateBaseAmount}
+          />
+        </Col>
+        <Col lg="2" style={{ textAlign: "center" }}>
+          <Button onClick={onReverseCodes}>Reverse</Button>
+        </Col>
+        <Col lg="5">
+          <CurrencySelector
+            amount={calculatedAmount}
+            selectedCode={targetCode}
+            currencyCodes={currencyCodes}
+            onSelectCode={onSelectTargetCode}
+            onUpdateAmount={() => {}}
+          />
+        </Col>
+      </Row>
+    </Container>
   );
 }
 
