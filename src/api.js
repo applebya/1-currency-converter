@@ -1,22 +1,7 @@
-function fetchCurrencyCodes(cb) {
-	fetch("http://api.fixer.io/latest", {
-		method: "get"
-	})
-		.then(response => response.json())
-		.then(json => {
-			let { base, rates } = json,
-				currencyCodes = [base, ...Object.keys(rates)].sort();
+const fetchURI = "http://api.fixer.io/latest";
 
-			cb(currencyCodes);
-			return;
-		})
-		.catch(error => {
-			alert(
-				"Unable to load currency codes, please check your network connection and try again"
-			);
-			throw new Error(error);
-			return;
-		});
+function fetchRatesFor(code = "USD") {
+	return fetch(fetchURI + `?base=${code}`, { method: "get" }).then(response => response.json());
 }
 
-export { fetchCurrencyCodes };
+export { fetchRatesFor };
